@@ -19,7 +19,7 @@ class CityModel(Model):
         self.traffic_lights = []
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open('city_files/2021_base.txt') as baseFile:
+        with open('city_files/2022_base.txt') as baseFile:
             lines = baseFile.readlines()
             self.width = len(lines[0])-1
             self.height = len(lines)
@@ -47,14 +47,26 @@ class CityModel(Model):
                     elif col == "D":
                         agent = Destination(f"d_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
-                    elif col == "C":
-                        agent = Car(f"c_{r*self.width+c}", self)
-                        self.grid.place_agent(agent, (c, self.height - r - 1))
-                        self.schedule.add(agent)
 
         self.num_agents = N
+    def generateCars(self, num_agents):
+        """ Generate N cars at random locations. """
+        spawn_points = [(0,0), (0, self.height-1), (self.width-1, 0), (self.width-1, self.height-1)]
+        for i in range(num_agents):
+            for spawn_point in spawn_points:
+                agent = Car(self.num_agents, self)
+                self.grid.place_agent(agent, spawn_point) 
+                self.schedule.add(agent)
+                self.num_agents += 1 
+           
         self.running = True
+
 
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
+        if self.schedule.steps % 10 == 0:
+            self.generateCars(4)
+        
+        
+        
