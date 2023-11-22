@@ -34,11 +34,18 @@ def agent_portrayal(agent):
         portrayal["w"] = 0.8
         portrayal["h"] = 0.8
 
-    return portrayal
+    if (isinstance(agent, Car)):
+        portrayal["Color"] = "black"
+        portrayal["Layer"] = 2
+        portrayal["w"] = 0.8
+        portrayal["h"] = 0.8
 
+
+    return portrayal
 width = 0
 height = 0
-file_path =  "./city_files/2021_base.txt"
+file_path = "./city_files/2021_base.txt"
+
 
 with open(file_path) as baseFile:
     lines = baseFile.readlines()
@@ -51,6 +58,6 @@ print(width, height)
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
 server = ModularServer(CityModel, [grid], "Traffic Base", model_params)
-                       
+     
 server.port = 8521 # The default
 server.launch()
