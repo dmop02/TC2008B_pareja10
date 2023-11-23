@@ -17,14 +17,6 @@ class Car(Agent):
             model: Model reference for the agent
         """
 
-        if any(isinstance(agent, Destination)for agent in current_cell):
-            destination = next (agent for agent in current_cell if isinstance(agent, Destination))
-            graph = nx.grid_graph(dim=[self.model.width, self.model.height])
-            start = (x,y)
-            end = destination.pos
-            path = nx.astar_path(graph, start, end)
-            next_cell = path[1]
-            self.model.grid.move_agent(self, next_cell)
         super().__init__(unique_id, model)
 
 
@@ -32,36 +24,60 @@ class Car(Agent):
         """ 
         Determines if the agent can move in the direction that was chosen
         """
-        x,y = self.pos
+        x, y = self.pos
         current_cell = self.model.grid.get_cell_list_contents([(x,y)])
 
-        # If the agent is in a cell with a traffic light, and the traffic light is red, the agent will not move
+
+        # Flag to check if the traffic light condition is met
+        traffic_light_condition_met = False
+
+        # Check if there is a traffic light in the cell
         for agent in current_cell:
             if isinstance(agent, Traffic_Light):
                 if not agent.state:
+                    # Stop the movement if the traffic light is red
                     return
+                else:
+                    # Set the flag to indicate that the traffic light condition is met
+                    traffic_light_condition_met = True
+
+        # Continue the movement for other agents if the traffic light condition is met
+        if traffic_light_condition_met:
+            x, y = self.pos
+            for agent in current_cell:
+                if isinstance(agent, Road):
+                    direction = next (agent for agent in current_cell if isinstance(agent, Destination))
+                    if direction == "Right":
+                        self.model.grid.move_agent(self, (x+1, y))
+                    elif direction == "Left":
+                        self.model.grid.move_agent(self, (x-1, y))
+                    elif direction == "Up":
+                        self.model.grid.move_agent(self, (x, y+1))
+                    elif direction == "Down":
+                        self.model.grid.move_agent(self, (x, y-1))
+
+                
         if any(isinstance(agent, Road)for agent in current_cell):
             road_a = next (agent for agent in current_cell if isinstance(agent, Road))
-            if self.direction == "Right":
+            if road_a.direction == "Right":
                 self.model.grid.move_agent(self, (x+1, y))
-            elif self.direction == "Left":
+            elif road_a.direction == "Left":
                 self.model.grid.move_agent(self, (x-1, y))
-            elif self.direction == "Up":
+            elif road_a.direction == "Up":
                 self.model.grid.move_agent(self, (x, y+1))
-            elif self.direction == "Down":
+            elif road_a.direction == "Down":
                 self.model.grid.move_agent(self, (x, y-1))
-    
+
         
 
 
-        self.model.grid.move_to_empty(self)
+
 
     def step(self):
         """ 
         Determines the new direction it will take, and then moves
         """
         self.move()
-
 
 class Traffic_Light(Agent):
     """
@@ -77,7 +93,6 @@ class Traffic_Light(Agent):
             state: Whether the traffic light is green or red
             timeToChange: After how many step should the traffic light change color 
         """
-
         self.state = state
         self.timeToChange = timeToChange
 
@@ -85,10 +100,8 @@ class Traffic_Light(Agent):
         """ 
         To change the state (green or red) of the traffic light in case you consider the time to change of each traffic light.
         """
-        
         if self.model.schedule.steps % self.timeToChange == 0:
             self.state = not self.state
-
 
 class Destination(Agent):
     """
@@ -98,16 +111,6 @@ class Destination(Agent):
         super().__init__(unique_id, model)
 
     def step(self):
-        #Reach the nearest destination
-        x,y = self.pos
-        current_cell = self.model.grid.get_cell_list_contents([x,y])
-        if any(isinstance(agent, Car)for agent in current_cell):
-            car = next (agent for agent in current_cell if isinstance(agent, Car))
-            self.model.schedule.remove(car)
-            self.model.grid.remove_agent(car)
-            self.model.num_agents -= 1
-            return
-        
         pass
 
 class Obstacle(Agent):
