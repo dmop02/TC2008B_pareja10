@@ -1,5 +1,6 @@
 from mesa import Agent
 import random
+import networkx as nx
 
 class Car(Agent):
     """
@@ -42,7 +43,16 @@ class Car(Agent):
                 self.model.grid.move_agent(self, (x, y+1))
             elif self.direction == "down":
                 self.model.grid.move_agent(self, (x, y-1))
-
+        #a-star function to find nearest destination
+        if any(isinstance(agent, Destination)for agent in current_cell):
+            destination = next (agent for agent in current_cell if isinstance(agent, Destination))
+            graph = nx.grid_graph(dim=[self.model.width, self.model.height])
+            start = (x,y)
+            end = destination.pos
+            path = nx.astar_path(graph, start, end)
+            next_cell = path[1]
+            self.model.grid.move_agent(self, next_cell)
+        
 
 
         self.model.grid.move_to_empty(self)
@@ -75,6 +85,7 @@ class Traffic_Light(Agent):
         """ 
         To change the state (green or red) of the traffic light in case you consider the time to change of each traffic light.
         """
+        
         if self.model.schedule.steps % self.timeToChange == 0:
             self.state = not self.state
 
