@@ -67,4 +67,4 @@ class CityModel(Model):
         self.schedule.step()
         if self.schedule.steps % 10 == 0:
             self.generateCars(4)
-            
+

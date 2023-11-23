@@ -24,22 +24,26 @@ class Car(Agent):
         """ 
         Determines if the agent can move in the direction that was chosen
         """
-        if(self.direction == "right") :
-            if(self.model.grid.is_empty(self.pos[0]+ 
-                1, self.pos[1])):
-                self.model.grid.move_agent(self, (self.pos[0]+1, self.pos[1]))
-        elif(self.direction == "left") :
-            if(self.model.grid.is_empty(self.pos[0]- 
-                1, self.pos[1])):
-                self.model.grid.move_agent(self, (self.pos[0]-1, self.pos[1]))
-        elif(self.direction == "up") :
-            if(self.model.grid.is_empty(self.pos[0], self.pos[1]+ 
-                1)):
-                self.model.grid.move_agent(self, (self.pos[0], self.pos[1]+1))
-        elif(self.direction == "down") :
-            if(self.model.grid.is_empty(self.pos[0], self.pos[1]- 
-                1)):
-                self.model.grid.move_agent(self, (self.pos[0], self.pos[1]-1))
+        x,y = self.pos
+        current_cell = self.model.grid.get_cell_list_contents([x,y])
+
+        # If the agent is in a cell with a traffic light, and the traffic light is red, the agent will not move
+        for agent in current_cell:
+            if isinstance(agent, Traffic_Light):
+                if not agent.state:
+                    return
+        if any(isinstance(agent, Road)for agent in current_cell):
+            road_a = next (agent for agent in current_cell if isinstance(agent, Road))
+            if self.direction == "right":
+                self.model.grid.move_agent(self, (x+1, y))
+            elif self.direction == "left":
+                self.model.grid.move_agent(self, (x-1, y))
+            elif self.direction == "up":
+                self.model.grid.move_agent(self, (x, y+1))
+            elif self.direction == "down":
+                self.model.grid.move_agent(self, (x, y-1))
+
+
 
         self.model.grid.move_to_empty(self)
 
@@ -106,6 +110,7 @@ class Road(Agent):
             model: Model reference for the agent
             direction: Direction where the cars can move
         """
+
         super().__init__(unique_id, model)
         self.direction = direction
 
