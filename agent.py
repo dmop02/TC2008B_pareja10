@@ -17,33 +17,6 @@ class Car(Agent):
             model: Model reference for the agent
         """
 
-        self.direction = random.choice(["right", "left", "up", "down"])
-        super().__init__(unique_id, model)
-
-
-    def move(self):
-        """ 
-        Determines if the agent can move in the direction that was chosen
-        """
-        x,y = self.pos
-        current_cell = self.model.grid.get_cell_list_contents([x,y])
-
-        # If the agent is in a cell with a traffic light, and the traffic light is red, the agent will not move
-        for agent in current_cell:
-            if isinstance(agent, Traffic_Light):
-                if not agent.state:
-                    return
-        if any(isinstance(agent, Road)for agent in current_cell):
-            road_a = next (agent for agent in current_cell if isinstance(agent, Road))
-            if self.direction == "right":
-                self.model.grid.move_agent(self, (x+1, y))
-            elif self.direction == "left":
-                self.model.grid.move_agent(self, (x-1, y))
-            elif self.direction == "up":
-                self.model.grid.move_agent(self, (x, y+1))
-            elif self.direction == "down":
-                self.model.grid.move_agent(self, (x, y-1))
-        #a-star function to find nearest destination
         if any(isinstance(agent, Destination)for agent in current_cell):
             destination = next (agent for agent in current_cell if isinstance(agent, Destination))
             graph = nx.grid_graph(dim=[self.model.width, self.model.height])
@@ -52,6 +25,32 @@ class Car(Agent):
             path = nx.astar_path(graph, start, end)
             next_cell = path[1]
             self.model.grid.move_agent(self, next_cell)
+        super().__init__(unique_id, model)
+
+
+    def move(self):
+        """ 
+        Determines if the agent can move in the direction that was chosen
+        """
+        x,y = self.pos
+        current_cell = self.model.grid.get_cell_list_contents([(x,y)])
+
+        # If the agent is in a cell with a traffic light, and the traffic light is red, the agent will not move
+        for agent in current_cell:
+            if isinstance(agent, Traffic_Light):
+                if not agent.state:
+                    return
+        if any(isinstance(agent, Road)for agent in current_cell):
+            road_a = next (agent for agent in current_cell if isinstance(agent, Road))
+            if self.direction == "Right":
+                self.model.grid.move_agent(self, (x+1, y))
+            elif self.direction == "Left":
+                self.model.grid.move_agent(self, (x-1, y))
+            elif self.direction == "Up":
+                self.model.grid.move_agent(self, (x, y+1))
+            elif self.direction == "Down":
+                self.model.grid.move_agent(self, (x, y-1))
+    
         
 
 
@@ -62,7 +61,7 @@ class Car(Agent):
         Determines the new direction it will take, and then moves
         """
         self.move()
-        self.direction = random.choice(["right", "left", "up", "down"])
+
 
 class Traffic_Light(Agent):
     """
@@ -78,6 +77,7 @@ class Traffic_Light(Agent):
             state: Whether the traffic light is green or red
             timeToChange: After how many step should the traffic light change color 
         """
+
         self.state = state
         self.timeToChange = timeToChange
 
@@ -89,6 +89,7 @@ class Traffic_Light(Agent):
         if self.model.schedule.steps % self.timeToChange == 0:
             self.state = not self.state
 
+
 class Destination(Agent):
     """
     Destination agent. Where each car should go.
@@ -97,6 +98,16 @@ class Destination(Agent):
         super().__init__(unique_id, model)
 
     def step(self):
+        #Reach the nearest destination
+        x,y = self.pos
+        current_cell = self.model.grid.get_cell_list_contents([x,y])
+        if any(isinstance(agent, Car)for agent in current_cell):
+            car = next (agent for agent in current_cell if isinstance(agent, Car))
+            self.model.schedule.remove(car)
+            self.model.grid.remove_agent(car)
+            self.model.num_agents -= 1
+            return
+        
         pass
 
 class Obstacle(Agent):
