@@ -1,4 +1,5 @@
 from mesa import Agent
+import random
 
 class Car(Agent):
     """
@@ -14,12 +15,32 @@ class Car(Agent):
             unique_id: The agent's ID
             model: Model reference for the agent
         """
+
+        self.direction = random.choice(["right", "left", "up", "down"])
         super().__init__(unique_id, model)
+
 
     def move(self):
         """ 
         Determines if the agent can move in the direction that was chosen
-        """        
+        """
+        if(self.direction == "right") :
+            if(self.model.grid.is_empty(self.pos[0]+ 
+                1, self.pos[1])):
+                self.model.grid.move_agent(self, (self.pos[0]+1, self.pos[1]))
+        elif(self.direction == "left") :
+            if(self.model.grid.is_empty(self.pos[0]- 
+                1, self.pos[1])):
+                self.model.grid.move_agent(self, (self.pos[0]-1, self.pos[1]))
+        elif(self.direction == "up") :
+            if(self.model.grid.is_empty(self.pos[0], self.pos[1]+ 
+                1)):
+                self.model.grid.move_agent(self, (self.pos[0], self.pos[1]+1))
+        elif(self.direction == "down") :
+            if(self.model.grid.is_empty(self.pos[0], self.pos[1]- 
+                1)):
+                self.model.grid.move_agent(self, (self.pos[0], self.pos[1]-1))
+
         self.model.grid.move_to_empty(self)
 
     def step(self):
@@ -27,6 +48,7 @@ class Car(Agent):
         Determines the new direction it will take, and then moves
         """
         self.move()
+        self.direction = random.choice(["right", "left", "up", "down"])
 
 class Traffic_Light(Agent):
     """
