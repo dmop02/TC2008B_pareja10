@@ -65,6 +65,6 @@ class CityModel(Model):
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
-        if self.schedule.steps % 10 == 0:
+        if self.schedule.steps -1 % 10 == 0:
             self.generateCars(4)
 
