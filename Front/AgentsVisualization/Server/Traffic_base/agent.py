@@ -16,7 +16,7 @@ class Car(Agent):
             unique_id: The agent's ID
             model: Model reference for the agent
         """
-
+        
         super().__init__(unique_id, model)
 
 
@@ -26,35 +26,6 @@ class Car(Agent):
         """
         x, y = self.pos
         current_cell = self.model.grid.get_cell_list_contents([(x,y)])
-
-
-        # Flag to check if the traffic light condition is met
-        traffic_light_condition_met = False
-
-        # Check if there is a traffic light in the cell
-        for agent in current_cell:
-            if isinstance(agent, Traffic_Light):
-                if not agent.state:
-                    # Stop the movement if the traffic light is red
-                    return
-                else:
-                    # Set the flag to indicate that the traffic light condition is met
-                    traffic_light_condition_met = True
-
-        # Continue the movement for other agents if the traffic light condition is met
-        if traffic_light_condition_met:
-            x, y = self.pos
-            for agent in current_cell:
-                if isinstance(agent, Road):
-                    direction = next (agent for agent in current_cell if isinstance(agent, Destination))
-                    if direction == "Right":
-                        self.model.grid.move_agent(self, (x+1, y))
-                    elif direction == "Left":
-                        self.model.grid.move_agent(self, (x-1, y))
-                    elif direction == "Up":
-                        self.model.grid.move_agent(self, (x, y+1))
-                    elif direction == "Down":
-                        self.model.grid.move_agent(self, (x, y-1))
 
                 
         if any(isinstance(agent, Road)for agent in current_cell):
@@ -67,7 +38,15 @@ class Car(Agent):
                 self.model.grid.move_agent(self, (x, y+1))
             elif road_a.direction == "Down":
                 self.model.grid.move_agent(self, (x, y-1))
-
+            
+        if any(isinstance(agent, Destination)for agent in current_cell):
+            destination = next (agent for agent in current_cell if isinstance(agent, Destination))
+            graph = nx.grid_graph(dim=[self.model.width, self.model.height])
+            start = (x,y)
+            end = destination.pos
+            path = nx.astar_path(graph, start, end)
+            next_cell = path[1]
+            self.model.grid.move_agent(self, next_cell)
         
 
 
