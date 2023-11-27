@@ -86,5 +86,5 @@ def updateModel():
         )
 
 
-if _name_ == "_main_":
+if __name__ == "_main_":
     app.run(host="localhost", port=8585, debug=True)
