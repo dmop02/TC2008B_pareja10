@@ -3,75 +3,88 @@
 # Octavio Navarro. October 2023git
 
 from flask import Flask, request, jsonify
-from randomAgents.model import RandomModel
-from randomAgents.agent import RandomAgent, ObstacleAgent
+from Traffic_base.model import CityModel
+from Traffic_base.agent import Car, Obstacle
 
 # Size of the board:
 number_agents = 10
 width = 28
 height = 28
-randomModel = None
+cityModel = None
 currentStep = 0
 
 app = Flask("Traffic example")
 
-@app.route('/init', methods=['GET', 'POST'])
-def initModel():
-    global currentStep, randomModel, number_agents, width, height
 
-    if request.method == 'POST':
-        number_agents = int(request.form.get('NAgents'))
-        width = int(request.form.get('width'))
-        height = int(request.form.get('height'))
+@app.route("/init", methods=["GET", "POST"])
+def initModel():
+    global currentStep, cityModel, number_agents, width, height
+
+    if request.method == "POST":
+        number_agents = int(request.form.get("NAgents"))
+        width = int(request.form.get("width"))
+        height = int(request.form.get("height"))
         currentStep = 0
 
-        print(request.form)
-        print(number_agents, width, height)
-        randomModel = RandomModel(number_agents, width, height)
+        cityModel = CityModel(number_agents)
 
-        return jsonify({"message":"Parameters recieved, model initiated."})
-    elif request.method == 'GET':
+        return jsonify({"message": "Parameters recieved, model initiated."})
+    elif request.method == "GET":
         number_agents = 10
         width = 30
         height = 30
         currentStep = 0
-        randomModel = RandomModel(number_agents, width, height)
+        cityModel = CityModel(number_agents)
 
-        return jsonify({"message":"Default parameters recieved, model initiated."})
+        return jsonify({"message": "Default parameters recieved, model initiated."})
 
 
-@app.route('/getAgents', methods=['GET'])
+@app.route("/getAgents", methods=["GET"])
 def getAgents():
-    global randomModel
+    global cityModel
 
-    if request.method == 'GET':
-        agentPositions = [{"id": str(a.unique_id), "x": x, "y":1, "z":z}
-                          for a, (x, z) in randomModel.grid.coord_iter()
-                          if isinstance(a, RandomAgent)]
+    if request.method == "GET":
+        # Print agent positions
+        for a, (x, z) in cityModel.grid.coord_iter():
+            print(a, x, z)
+        agentPositions = [
+            {"id": str(agent.unique_id), "x": x, "y": 1, "z": z}
+            for agents, (x, z) in cityModel.grid.coord_iter()
+            for agent in agents
+            if isinstance(agent, Car)
+        ]
 
-        return jsonify({'positions':agentPositions})
+        return jsonify({"positions": agentPositions})
 
 
-@app.route('/getObstacles', methods=['GET'])
+@app.route("/getObstacles", methods=["GET"])
 def getObstacles():
-    global randomModel
+    global cityModel
 
-    if request.method == 'GET':
-        carPositions = [{"id": str(a.unique_id), "x": x, "y":1, "z":z}
-                        for a, (x, z) in randomModel.grid.coord_iter()
-                        if isinstance(a, ObstacleAgent)]
+    if request.method == "GET":
+        carPositions = [
+            {"id": str(agent.unique_id), "x": x, "y": 1, "z": z}
+            for agents, (x, z) in cityModel.grid.coord_iter()
+            for agent in agents
+            if isinstance(agent, Obstacle)
+        ]
 
-        return jsonify({'positions':carPositions})
+        return jsonify({"positions": carPositions})
 
 
-@app.route('/update', methods=['GET'])
+@app.route("/update", methods=["GET"])
 def updateModel():
-    global currentStep, randomModel
-    if request.method == 'GET':
-        randomModel.step()
+    global currentStep, cityModel
+    if request.method == "GET":
+        cityModel.step()
         currentStep += 1
-        return jsonify({'message':f'Model updated to step {currentStep}.', 'currentStep':currentStep})
+        return jsonify(
+            {
+                "message": f"Model updated to step {currentStep}.",
+                "currentStep": currentStep,
+            }
+        )
 
 
-if __name__=='__main__':
+if __name__ == "_main_":
     app.run(host="localhost", port=8585, debug=True)

@@ -1,7 +1,7 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
-from agent import *
+from proyecto.TC2008B_pareja10.Front.AgentsVisualization.Server.Traffic_base.agent import *
 import json
 
 class CityModel(Model):
