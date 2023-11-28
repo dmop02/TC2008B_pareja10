@@ -26,6 +26,7 @@ def initModel():
         height = int(request.form.get("height"))
         currentStep = 0
 
+        
         cityModel = CityModel(number_agents)
 
         return jsonify({"message": "Parameters recieved, model initiated."})
@@ -86,5 +87,5 @@ def updateModel():
         )
 
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     app.run(host="localhost", port=8585, debug=True)
