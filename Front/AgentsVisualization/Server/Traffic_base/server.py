@@ -1,5 +1,5 @@
-from proyecto.TC2008B_pareja10.Front.AgentsVisualization.Server.Traffic_base.agent import *
-from proyecto.TC2008B_pareja10.Front.AgentsVisualization.Server.Traffic_base.model import CityModel
+from agent import *
+from model import CityModel
 from mesa.visualization import CanvasGrid, BarChartModule
 from mesa.visualization import ModularServer
 

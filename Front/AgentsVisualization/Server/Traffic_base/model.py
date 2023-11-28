@@ -1,7 +1,7 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
-from proyecto.TC2008B_pareja10.Front.AgentsVisualization.Server.Traffic_base.agent import *
+from agent import *
 import json
 
 class CityModel(Model):
@@ -17,6 +17,7 @@ class CityModel(Model):
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
 
         self.traffic_lights = []
+        self.total_cars = 0
 
         # Load the map file. The map file is a text file where each character represents an agent.
         with open('city_files/2022_base.txt') as baseFile:
@@ -47,24 +48,43 @@ class CityModel(Model):
                     elif col == "D":
                         agent = Destination(f"d_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
+                        self.schedule.add(agent)
 
         self.num_agents = N
+        self.running = True
     def generateCars(self, num_agents):
         """ Generate N cars at random locations. """
-        spawn_points = [(0,0), (0, self.height-1), (self.width-1, 0), (self.width-1, self.height-1)]
-        for i in range(num_agents):
-            for spawn_point in spawn_points:
-                agent = Car(self.num_agents, self)
-                self.grid.place_agent(agent, spawn_point) 
-                self.schedule.add(agent)
-                self.num_agents += 1 
-           
-        self.running = True
+        spawn_points = [(0, 0), (0, self.height - 1), (self.width - 1, 0), (self.width - 1, self.height - 1)]
 
+        for spawn_point in spawn_points:
+            print("spawn point: ", spawn_point)
+            print("destinations: ", self.getDestinations())
+            agent = Car(self.total_cars + 1, self, spawn_point, self.getDestinations())
+            agent.getPath()
+            self.grid.place_agent(agent, spawn_point)
+            self.schedule.add(agent)
+            self.total_cars += 1
+
+           
+        
+
+    def getDestinations(self):
+        destinations = []
+        for agent in self.schedule.agents:
+            if isinstance(agent, Destination):
+                destinations.append(agent.pos)
+        return self.random.choice(destinations)
+    
+    def remove_car(self, car):
+        self.schedule.remove(car)
+        self.grid.remove_agent(car)
+        self.num_agents -= 1
 
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
-        if self.schedule.steps -1 % 10 == 0:
+        if (self.schedule.steps -1) % 10 == 0:
             self.generateCars(4)
+
+        
 
