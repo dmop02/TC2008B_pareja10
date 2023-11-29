@@ -186,7 +186,7 @@ public class AgentController : MonoBehaviour
 
             // Once the configuration has been sent, it launches a coroutine to get the agents data.
             StartCoroutine(GetAgentsData());
-            StartCoroutine(GetObstacleData());
+            StartCoroutine(GetTrafficLightData());
         }
     }
 
@@ -207,11 +207,11 @@ public class AgentController : MonoBehaviour
 
             foreach(AgentData agent in agentsData.positions)
             {
-                Vector3 orginPos = new Vector3 (0,0,0)
+                Vector3 orginPos = new Vector3 (0,0,0);
                 Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
                 
 
-                    if(!agents(agent.id))
+                    if(!agents.ContainsKey(agent.id))
                     {
                         agents[agent.id] = Instantiate(agentPrefab, orginPos,Quaternion.identity);
                         agents(agent.id).GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
@@ -220,7 +220,7 @@ public class AgentController : MonoBehaviour
                     }
                     else
                     {
-                        agents(agent.id).GetComponent<ApplyTransforms>().setDestination(newAgentPosition)
+                        agents(agent.id).GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
                     }
             }
 
@@ -229,7 +229,7 @@ public class AgentController : MonoBehaviour
         }
     }
 
-    IEnumerator GetObstacleData() 
+    IEnumerator GetTrafficLightData() 
     {
         UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
         yield return www.SendWebRequest();
