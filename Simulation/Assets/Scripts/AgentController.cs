@@ -207,19 +207,20 @@ public class AgentController : MonoBehaviour
 
             foreach(AgentData agent in agentsData.positions)
             {
+                Vector3 orginPos = new Vector3 (0,0,0)
                 Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
+                
 
-                    if(!started)
+                    if(!agents(agent.id))
                     {
-                        prevPositions[agent.id] = newAgentPosition;
-                        agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
+                        agents[agent.id] = Instantiate(agentPrefab, orginPos,Quaternion.identity);
+                        agents(agent.id).GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
+                        
+
                     }
                     else
                     {
-                        Vector3 currentPosition = new Vector3();
-                        if(currPositions.TryGetValue(agent.id, out currentPosition))
-                            prevPositions[agent.id] = currentPosition;
-                        currPositions[agent.id] = newAgentPosition;
+                        agents(agent.id).GetComponent<ApplyTransforms>().setDestination(newAgentPosition)
                     }
             }
 
