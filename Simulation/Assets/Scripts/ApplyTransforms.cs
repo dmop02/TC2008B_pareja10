@@ -25,8 +25,7 @@ public class ApplyTransforms : MonoBehaviour
     
     Vector3 stopP;
     Vector3 startP;
-    int timer -= Time.deltaTime;
-    int dt = 1.0f - (timer / timeToUpdate);
+    
     
 
     // First car variables
@@ -103,7 +102,7 @@ public class ApplyTransforms : MonoBehaviour
     {
 
         displacement = stopP - startP;
-        Vector3 displacement = Vector3.Lerp(startP, stopP, dt)
+        displacement = Vector3.Lerp(startP, stopP, dt);
         DoTransform();
     }
 
@@ -170,9 +169,10 @@ public class ApplyTransforms : MonoBehaviour
         mesh4.RecalculateNormals();
 
     }
-    public setDestination(Vector3 destination, )
+    public void setDestination(Vector3 destination)
     {
         startP = stopP;
         stopP = destination;
+
     }
 }
