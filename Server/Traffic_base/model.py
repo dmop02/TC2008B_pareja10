@@ -16,14 +16,14 @@ class CityModel(Model):
         
 
         # Define the file path
-        dataDictionary = json.load(open("static/city_files/mapDictionary.json"))
+        dataDictionary = json.load(open("Server/city_files/mapDictionary.json"))
 
 
         self.traffic_lights = []
         self.total_cars = 0
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open("static/city_files/2022_base.txt") as baseFile:
+        with open("Server/city_files/2022_base.txt") as baseFile:
             lines = baseFile.readlines()
             self.width = len(lines[0])-1
             self.height = len(lines)

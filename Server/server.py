@@ -3,8 +3,8 @@
 # Octavio Navarro. October 2023git
 
 from flask import Flask, request, jsonify
-from model import CityModel
-from agent import Car, Obstacle
+from randomAgents.model import CityModel
+from randomAgents.agent import Car, Obstacle
 
 # Size of the board:
 number_agents = 10

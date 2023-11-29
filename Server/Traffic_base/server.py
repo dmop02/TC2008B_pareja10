@@ -44,7 +44,7 @@ def agent_portrayal(agent):
     return portrayal
 width = 0
 height = 0
-file_path = "static/city_files/2022_base.txt"
+file_path = "Server/city_files/2022_base.txt"
 
 
 with open(file_path) as baseFile:
