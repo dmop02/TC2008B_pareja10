@@ -1,7 +1,7 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
-from Traffic_base.agent import *
+from agent import *
 import json
 import os
 
@@ -13,7 +13,7 @@ class CityModel(Model):
             N: Number of agents in the simulation
     """
     def __init__(self, N):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
 
         # Define the file path
         dataDictionary = json.load(open("static/city_files/mapDictionary.json"))
