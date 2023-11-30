@@ -91,18 +91,20 @@ class Car(Agent):
     def getPath(self):
         self.path = self.find_path()
 
-    def checkPath(self, currentPos, nextPos, roadDir):
-        dx = nextPos[0] - currentPos[0] # Change in x
-        dy = nextPos[1] - currentPos[1] # Change in y
-        if roadDir == "Right": # If the road is going right,
-            return dx != -1 # Moving left is not allowed
-        elif roadDir == "Left": # If the road is going left,
-            return dx != 1 # Moving right is not allowed
-        elif roadDir == "Up": # If the road is going up,
-            return dy != -1 # Moving down is not allowed
-        elif roadDir == "Down": # If the road is going down,
-            return dy != 1 # Moving up is not allowed
-        return False # If the road direction is invalid, return False
+    def isMoveAllowed(self, currentPos, nextPos, roadDir):
+        dx = nextPos[0] - currentPos[0]  # Change in x
+        dy = nextPos[1] - currentPos[1]  # Change in y
+
+        # Define a dictionary to map road directions to movement conditions
+        direction_conditions = {
+            "Right": dx != -1,
+            "Left": dx != 1,
+            "Up": dy != -1,
+            "Down": dy != 1,
+        }
+
+        # Use the dictionary to check the movement condition based on road direction
+        return direction_conditions.get(roadDir, False)
         
     def find_path(self):
         if self.destination:
@@ -114,25 +116,17 @@ class Car(Agent):
                     roadAgents = [agent for agent in content if isinstance(agent, Road)]
                     if roadAgents:
                         roadAgent = roadAgents[0]
-                        return self.checkPath(currentPos, nextPos, roadAgent.direction)
+                        return self.isMoveAllowed(currentPos, nextPos, roadAgent.direction)
                     return True
                 return False
             return a_star_search(self.model.grid, self.start, self.destination, path_clear)
         return None
     
-    def get_direction(self, currentPos, nextPos):
-        dx = nextPos[0] - currentPos[0] # Change in x
-        dy = nextPos[1] - currentPos[1] # Change in y
-        if dx == 1: # If the agent moved right,
-            return "Right"
-        elif dx == -1: # If the agent moved left,
-            return "Left"
-        elif dy == -1: # If the agent moved up,
-            return "Up"
-        elif dy == 1: # If the agent moved down,
-            return "Down"
-        else: # If the agent didn't move,
-            return None
+    def calculateDirection(self, currentPos, nextPos):
+        direction_mapping = {(1, 0): "Right", (-1, 0): "Left", (0, -1): "Up", (0, 1): "Down"} # Diccionario para mapear los cambios en x y y a direcciones
+        dx = nextPos[0] - currentPos[0] # Se calcula el cambio en x 
+        dy = nextPos[1] - currentPos[1] # Se calcula el cambio en y 
+        return direction_mapping.get((dx, dy), None)
 
     def move(self):
         """ 
@@ -155,62 +149,13 @@ class Car(Agent):
             
             if next_pos is not None: # If the next position is not None,
                 self.model.grid.move_agent(self, next_pos) # Move the agent to the next position
-                self.direction = self.get_direction(self.pos, next_pos) # Get the direction the agent should face
+                self.direction = self.calculateDirection(self.pos, next_pos) # Get the direction the agent should face
                 if next_pos == self.destination: # If the destination is reached,
                     print(f"Car {self.unique_id} reached destination {self.destination}") 
                     self.model.remove_car(self) # Remove the car from the model
             else: # If the next position is None,
                 print("No valid next position found.")
-            
-       
-        # current_cell = self.model.grid.get_cell_list_contents([(x,y)])
-
-
-        # # Flag to check if the traffic light condition is met
-        # traffic_light_condition_met = False
-
-        # Check if there is a traffic light in the cell
-        # for agent in current_cell:
-        #     if isinstance(agent, Traffic_Light):
-        #         if not agent.state:
-        #             # Stop the movement if the traffic light is red
-        #             return
-        #         else:
-        #             # Set the flag to indicate that the traffic light condition is met
-        #             traffic_light_condition_met = True
-
-        # Continue the movement for other agents if the traffic light condition is met
-        # if traffic_light_condition_met:
-        #     x, y = self.pos
-        #     for agent in current_cell:
-        #         if isinstance(agent, Road):
-        #             direction = next (agent for agent in current_cell if isinstance(agent, Destination))
-        #             if direction == "Right":
-        #                 self.model.grid.move_agent(self, (x+1, y))
-        #             elif direction == "Left":
-        #                 self.model.grid.move_agent(self, (x-1, y))
-        #             elif direction == "Up":
-        #                 self.model.grid.move_agent(self, (x, y+1))
-        #             elif direction == "Down":
-        #                 self.model.grid.move_agent(self, (x, y-1))
-
-                
-        # if any(isinstance(agent, Road)for agent in current_cell):
-        #     road_a = next (agent for agent in current_cell if isinstance(agent, Road))
-        #     if road_a.direction == "Right":
-        #         self.model.grid.move_agent(self, (x+1, y))
-        #     elif road_a.direction == "Left":
-        #         self.model.grid.move_agent(self, (x-1, y))
-        #     elif road_a.direction == "Up":
-        #         self.model.grid.move_agent(self, (x, y+1))
-        #     elif road_a.direction == "Down":
-        #         self.model.grid.move_agent(self, (x, y-1))
-
-        
-
-
-
-
+    
     def step(self):
         """ 
         Determines the new direction it will take, and then moves
@@ -279,3 +224,4 @@ class Road(Agent):
 
     def step(self):
         pass
+

@@ -23,7 +23,7 @@ class CityModel(Model):
         self.total_cars = 0
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open("Server/city_files/2022_base.txt") as baseFile:
+        with open("Server/city_files/2023_base.txt") as baseFile:
             lines = baseFile.readlines()
             self.width = len(lines[0])-1
             self.height = len(lines)
@@ -57,11 +57,14 @@ class CityModel(Model):
         self.running = True
     def generateCars(self, num_agents):
         """ Generate N cars at random locations. """
-        spawn_points = [(0, 0), (0, self.height - 1), (self.width - 1, 0), (self.width - 1, self.height - 1)]
+        if self.schedule.steps == 0:
+            # On the first step, initialize four cars at each corner
+            spawn_points = [(0, 0), (0, self.height - 1), (self.width - 1, 0), (self.width - 1, self.height - 1)]
+        else:
+            # On subsequent steps, initialize two cars at a random corner
+            spawn_points = [self.random.choice([(0, 0), (0, self.height - 1), (self.width - 1, 0), (self.width - 1, self.height - 1)]) for _ in range(2)]
 
         for spawn_point in spawn_points:
-            print("spawn point: ", spawn_point)
-            print("destinations: ", self.getDestinations())
             agent = Car(self.total_cars + 1, self, spawn_point, self.getDestinations())
             agent.getPath()
             self.grid.place_agent(agent, spawn_point)
@@ -86,8 +89,12 @@ class CityModel(Model):
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
-        if (self.schedule.steps -1) % 10 == 0:
-            self.generateCars(4)
+        current_step = self.schedule.steps - 1
 
+        if current_step == 0:
+            self.generateCars(4)
+        
+        if current_step % 3 == 0:
+            self.generateCars(1)
         
 
