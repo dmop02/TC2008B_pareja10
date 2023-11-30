@@ -9,6 +9,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
+
+
 [Serializable]
 public class AgentsData
 {
@@ -268,11 +270,11 @@ public class AgentController : MonoBehaviour
                     {
                         agents[agent.id] = Instantiate(agentPrefab, orginPos,Quaternion.identity);
                         agents[agent.id].GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
-                        
-
+                        ApplyTransforms applyTransforms = agents[agent.id].GetComponent<ApplyTransforms>;
                     }
                     else
                     {
+                        ApplyTransforms applyTransforms = agents[agent.id].GetComponent<ApplyTransforms>;
                         agents[agent.id].GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
                     }
             }
@@ -305,6 +307,7 @@ public class AgentController : MonoBehaviour
                 {
                     GameObject newTrafficLight = Instantiate(trafficLightPrefab, new Vector3(trafficLightData.x, trafficLightData.z, trafficLightData.y), Quaternion.identity);
                     agents.Add(trafficLightData.id, newTrafficLight);
+
                 }
                 else
                 {

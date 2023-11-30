@@ -19,19 +19,7 @@ public class LightsColor : MonoBehaviour
         meshRenderer = GetComponent<MeshRenderer>();
         trafficLight = GetComponent<Light>();
 
-        if (meshRenderer == null)
-        {
-            Debug.LogError("No MeshRenderer component found on the traffic light object.");
-            return;
-        }
-
-        if (trafficLight == null)
-        {
-            Debug.LogError("No Light component found on the traffic light object.");
-            return;
-        }
-
-        // Comenzar con la luz verde
+        //Start with Green
         meshRenderer.material = greenLightMaterial;
         trafficLight.color = greenLightColor;
         timer = changeInterval;
