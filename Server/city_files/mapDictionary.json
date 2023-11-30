@@ -6,5 +6,9 @@
     "#" : "Obstacle",
     "v" : "Down",
     "^" : "Up",
-    "D" : "Destination"
+    "D" : "Destination",
+    "E" : ["Up", "Left"],
+    "F" : ["Up", "Right"],
+    "G" : ["Down", "Right"],
+    "H" : ["Down", "Left"]
 }
