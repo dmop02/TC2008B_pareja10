@@ -21,14 +21,8 @@ def initModel():
     global currentStep, cityModel, number_agents, width, height
 
     if request.method == "POST":
-        number_agents = int(request.form.get("NAgents"))
-        width = int(request.form.get("width"))
-        height = int(request.form.get("height"))
         currentStep = 0
-
-        
         cityModel = CityModel(number_agents)
-
         return jsonify({"message": "Parameters recieved, model initiated."})
     elif request.method == "GET":
         number_agents = 10
@@ -49,7 +43,7 @@ def getAgents():
         for a, (x, z) in cityModel.grid.coord_iter():
             print(a, x, z)
         agentPositions = [
-            {"id": str(agent.unique_id), "x": x, "y": 1, "z": z}
+            {"id": str(agent.unique_id), "x": x, "y": 0, "z": z}
             for agents, (x, z) in cityModel.grid.coord_iter()
             for agent in agents
             if isinstance(agent, Car)
