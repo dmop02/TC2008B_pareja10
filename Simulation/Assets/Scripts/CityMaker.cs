@@ -7,7 +7,6 @@ public class CityMaker : MonoBehaviour
     [SerializeField] TextAsset layout;
     [SerializeField] GameObject roadPrefab;
     [SerializeField] GameObject buildingPrefab;
-    [SerializeField] GameObject semaphorePrefab;
     [SerializeField] int tileSize;
 
     // Start is called before the first frame update
@@ -40,6 +39,7 @@ public class CityMaker : MonoBehaviour
                 position = new Vector3(x * tileSize, 0, y * tileSize);
                 tile = Instantiate(roadPrefab, position, Quaternion.identity);
                 tile.transform.parent = transform;
+                Debug.Log(position);
                 x += 1;
             } else if (tiles[i] == 'v' || tiles[i] == '^') {
                 position = new Vector3(x * tileSize, 0, y * tileSize);
@@ -50,14 +50,10 @@ public class CityMaker : MonoBehaviour
                 position = new Vector3(x * tileSize, 0, y * tileSize);
                 tile = Instantiate(roadPrefab, position, Quaternion.identity);
                 tile.transform.parent = transform;
-                tile = Instantiate(semaphorePrefab, position, Quaternion.identity);
-                tile.transform.parent = transform;
                 x += 1;
             } else if (tiles[i] == 'S') {
                 position = new Vector3(x * tileSize, 0, y * tileSize);
                 tile = Instantiate(roadPrefab, position, Quaternion.Euler(0, 90, 0));
-                tile.transform.parent = transform;
-                tile = Instantiate(semaphorePrefab, position, Quaternion.Euler(0, 90, 0));
                 tile.transform.parent = transform;
                 x += 1;
             } else if (tiles[i] == 'D') {

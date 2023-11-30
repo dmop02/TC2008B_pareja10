@@ -10,7 +10,6 @@ public class ApplyTransforms : MonoBehaviour
     [SerializeField] Vector3 poswheel2;
     [SerializeField] Vector3 poswheel3;
     [SerializeField] Vector3 poswheel4;
-    [SerializeField] Vector3 displacement;
     [SerializeField] float angle;
     [SerializeField] AXIS rotationAxis;
     [SerializeField] GameObject wheel12;
