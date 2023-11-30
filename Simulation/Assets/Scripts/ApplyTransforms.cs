@@ -100,6 +100,8 @@ public class ApplyTransforms : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float dt = Time.deltaTime;
+        
 
         displacement = stopP - startP;
         displacement = Vector3.Lerp(startP, stopP, dt);

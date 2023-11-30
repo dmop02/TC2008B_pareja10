@@ -10,6 +10,22 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 [Serializable]
+public class AgentsData
+{
+    /*
+    The AgentData class is used to store the data of each agent.
+    
+    Attributes:
+        id (string): The id of the agent.
+        x (float): The x coordinate of the agent.
+        y (float): The y coordinate of the agent.
+        z (float): The z coordinate of the agent.
+    */
+    public List<AgentData> positions;
+
+    public AgentsData() => this.positions = new List<AgentData>();
+}
+[Serializable]
 public class AgentData
 {
     /*
@@ -23,6 +39,7 @@ public class AgentData
     */
     public string id;
     public float x, y, z;
+    public string state;
 
     public AgentData(string id, float x, float y, float z)
     {
@@ -30,24 +47,60 @@ public class AgentData
         this.x = x;
         this.y = y;
         this.z = z;
+        this.state = state;
+
     }
 }
-
 [Serializable]
-
-public class AgentsData
+public class TrafficLightData
 {
     /*
-    The AgentsData class is used to store the data of all the agents.
-
+    The AgentData class is used to store the data of each agent.
+    
     Attributes:
-        positions (list): A list of AgentData objects.
+        id (string): The id of the agent.
+        x (float): The x coordinate of the agent.
+        y (float): The y coordinate of the agent.
+        z (float): The z coordinate of the agent.
     */
-    public List<AgentData> positions;
+    public string id;
+    public float x, y, z;
+    public string state;
 
-    public AgentsData() => this.positions = new List<AgentData>();
+    public TrafficLightData(string id, float x, float y, float z, string state)
+    {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.state = state;
+    }
+    public List<TrafficLightData> positions;
+
+    public TrafficLightData() => this.positions = new List<TrafficLightData>();
+}
+[Serializable]
+public class trafficLightData
+{
+    /*
+    The AgentData class is used to store the data of each agent.
+    
+    Attributes:
+        id (string): The id of the agent.
+        x (float): The x coordinate of the agent.
+        y (float): The y coordinate of the agent.
+        z (float): The z coordinate of the agent.
+    */
+    public List<trafficLightData> positions;
+
+    public trafficLightData() => this.positions = new List<trafficLightData>();
 }
 
+
+
+
+
+[Serializable]
 public class AgentController : MonoBehaviour
 {
     /*
@@ -78,16 +131,16 @@ public class AgentController : MonoBehaviour
     */
     string serverUrl = "http://localhost:8585";
     string getAgentsEndpoint = "/getAgents";
-    string getObstaclesEndpoint = "/getObstacles";
+    string getTrafficLightsEndpoint = "/getTrafficLights";
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
-    AgentsData agentsData, obstacleData;
+    AgentsData agentsData, TrafficLData;
     Dictionary<string, GameObject> agents;
     Dictionary<string, Vector3> prevPositions, currPositions;
 
     bool updated = false, started = false;
 
-    public GameObject agentPrefab, obstaclePrefab, floor;
+    public GameObject agentPrefab, trafficLightPrefab, floor;
     public int NAgents, width, height;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
@@ -95,7 +148,7 @@ public class AgentController : MonoBehaviour
     void Start()
     {
         agentsData = new AgentsData();
-        obstacleData = new AgentsData();
+        TrafficLData = new AgentsData();
 
         prevPositions = new Dictionary<string, Vector3>();
         currPositions = new Dictionary<string, Vector3>();
@@ -186,7 +239,7 @@ public class AgentController : MonoBehaviour
 
             // Once the configuration has been sent, it launches a coroutine to get the agents data.
             StartCoroutine(GetAgentsData());
-            StartCoroutine(GetTrafficLightData());
+            StartCoroutine(GetTrafficLightsData());
         }
     }
 
@@ -214,13 +267,13 @@ public class AgentController : MonoBehaviour
                     if(!agents.ContainsKey(agent.id))
                     {
                         agents[agent.id] = Instantiate(agentPrefab, orginPos,Quaternion.identity);
-                        agents(agent.id).GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
+                        agents[agent.id].GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
                         
 
                     }
                     else
                     {
-                        agents(agent.id).GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
+                        agents[agent.id].GetComponent<ApplyTransforms>().setDestination(newAgentPosition);
                     }
             }
 
@@ -229,23 +282,38 @@ public class AgentController : MonoBehaviour
         }
     }
 
-    IEnumerator GetTrafficLightData() 
+    IEnumerator GetTrafficLightsData()
     {
-        UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
+        UnityWebRequest www = UnityWebRequest.Get(serverUrl + getTrafficLightsEndpoint);
         yield return www.SendWebRequest();
- 
+
         if (www.result != UnityWebRequest.Result.Success)
-            Debug.Log(www.error);
-        else 
         {
-            obstacleData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
+            Debug.Log("[GetTrafficLightsData] Error: " + www.error);
+        }
+        else
+        {
+            TrafficLightData newData = JsonUtility.FromJson<TrafficLightData>(www.downloadHandler.text);
+            HashSet<string> receivedTrafficLightIds = new HashSet<string>();
 
-            Debug.Log(obstacleData.positions);
-
-            foreach(AgentData obstacle in obstacleData.positions)
+            foreach (TrafficLightData trafficLightData in newData.positions)
             {
-                Instantiate(obstaclePrefab, new Vector3(obstacle.x, obstacle.y, obstacle.z), Quaternion.identity);
+
+                receivedTrafficLightIds.Add(trafficLightData.id);
+
+                if (!agents.ContainsKey(trafficLightData.id))
+                {
+                    GameObject newTrafficLight = Instantiate(trafficLightPrefab, new Vector3(trafficLightData.x, trafficLightData.z, trafficLightData.y), Quaternion.identity);
+                    agents.Add(trafficLightData.id, newTrafficLight);
+                }
+                else
+                {
+                    // get the traffic light and set the state
+                    agents[trafficLightData.id].GetComponent<LightsColor>().isGreen = trafficLightData.state.ToLower() == "true" ? true : false;
+                }
             }
         }
     }
 }
+
+

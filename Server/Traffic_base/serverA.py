@@ -4,7 +4,7 @@
 
 from flask import Flask, request, jsonify
 from model import CityModel
-from agent import Car, Obstacle
+from agent import Car, Obstacle, Traffic_Light
 
 # Size of the board:
 number_agents = 10
@@ -85,6 +85,23 @@ def updateModel():
                 "currentStep": currentStep,
             }
         )
+@app.route("/getTrafficLights", methods=["GET"])
+def getTraffic_Lights():
+    global currentStep, cityModel
+    if request.method == "GET":
+        traffic_light_positions = [
+            {
+                "id": agent.unique_id,
+                "state": 1 if agent.state else 0,
+                "x": x,
+                "y": 0,
+                "z": z,
+            }
+            for agents, (x, z) in cityModel.grid.coord_iter()
+            for agent in agents
+            if isinstance(agent, Traffic_Light)
+        ]
+        return jsonify({"positions": traffic_light_positions})
 
 
 if __name__ == "__main__":
