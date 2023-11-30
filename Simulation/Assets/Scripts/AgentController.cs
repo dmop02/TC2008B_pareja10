@@ -184,7 +184,7 @@ public class AgentController : MonoBehaviour
             {
                 Vector3 currentPosition = agent.Value;
                 Vector3 previousPosition = prevPositions[agent.Key];
-                agents[agent.Key].GetComponent<ApplyT>().StartMovement(Vector3 actualPosition, Vector3 newPosition);
+                agents[agent.Key].GetComponent<ApplyT>().StartMovement(previousPosition,currentPosition);
             }
 
             // float t = (timer / timeToUpdate);
@@ -263,6 +263,7 @@ public class AgentController : MonoBehaviour
                     {
                         prevPositions[agent.id] = newAgentPosition;
                         agents[agent.id] = Instantiate(agentPrefab, orginPos,Quaternion.identity);
+                        
 
                     }
                     else

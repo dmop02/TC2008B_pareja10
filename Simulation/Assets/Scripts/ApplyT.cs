@@ -17,6 +17,8 @@ public class ApplyT : MonoBehaviour
     List<Vector3[]> baseVerticesWheels;
     List<Vector3[]> newVerticesWheels;
     List<GameObject> wheelObjects;
+    Matrix4x4 composite; //
+    Matrix4x4 wheelcomposite; //
     void Start()
     {
         mesh = GetComponentInChildren<MeshFilter>().mesh;
@@ -26,6 +28,7 @@ public class ApplyT : MonoBehaviour
         baseVerticesWheels = new List<Vector3[]>();
         newVerticesWheels = new List<Vector3[]>();
         wheelObjects = new List<GameObject>();
+        
 
         foreach(Vector3 wheel in wheels)
         {
@@ -66,18 +69,18 @@ public class ApplyT : MonoBehaviour
         Matrix4x4 scale = HW_Transforms.ScaleMat(carscale, carscale, carscale);
         if(interpolation.x != 0)
         {
-            float angle = Mathf.Atan2(stopPos.x - startPos.x, stopPos.z - startPos.z)* Mathf.Rad2Deg;
-            Matrix4x4 rotation = HW_Transforms.RotationMatY(angle, AXIS.Y);
-            Matrix4x4 composite = move * rotation * scale;
+            float angle = Mathf.Atan2(stopPos.z - startPos.z, stopPos.x - startPos.x)* Mathf.Rad2Deg;
+            Matrix4x4 rotation = HW_Transforms.RotateMat(angle, AXIS.Y);
+            composite = move * rotation * scale;
 
         }
         else
         {
-            Matrix4x4 composite = move * scale;
+            composite = move * scale;
         }
         for (int i = 0; i < newVertices.Length; i++)
         {
-            Vector4 temp = new Vector4(baseVertices[i].x,baseVertices[i].y, baseVertices[i].z, 1 )
+            Vector4 temp = new Vector4(baseVertices[i].x,baseVertices[i].y, baseVertices[i].z, 1 );
             newVertices[i] = composite * temp;
 
         }
@@ -86,10 +89,10 @@ public class ApplyT : MonoBehaviour
         mesh.RecalculateBounds();
         for(int i = 0; i < wheelObjects.Count; i++)
         {
-            Matrix4x4 wheelscale = HW_Transforms.ScaleMat(wheelscale, wheelscale, wheelscale);
+            Matrix4x4 wheelscale = HW_Transforms.ScaleMat(wheelScale, wheelScale, wheelScale);
             Matrix4x4 wheelrotation = HW_Transforms.RotateMat(90 * Time.time, AXIS.X);
             Matrix4x4 wheelmove = HW_Transforms.TranslationMat(wheels[i].x, wheels[i].y,wheels[i].z);
-            Matrix4x4 wheelcomposite = composite * wheelmove * wheelrotation * wheelscale;
+            wheelcomposite = composite * wheelmove * wheelrotation * wheelscale;
             for(int j = 0; j < newVerticesWheels[i].Length; j++)
             {
                 Vector4 temp = new Vector4(baseVerticesWheels[i][j].x, baseVerticesWheels[i][j].y, baseVerticesWheels[i][j].z, 1);
