@@ -22,14 +22,14 @@ def initModel():
 
     if request.method == "POST":
         currentStep = 0
-        cityModel = CityModel(number_agents)
+        cityModel = CityModel()
         return jsonify({"message": "Parameters recieved, model initiated."})
     elif request.method == "GET":
         number_agents = 10
         width = 30
         height = 30
         currentStep = 0
-        cityModel = CityModel(number_agents)
+        cityModel = CityModel()
 
         return jsonify({"message": "Default parameters recieved, model initiated."})
 

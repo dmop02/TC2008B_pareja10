@@ -81,7 +81,7 @@ class Car(Agent):
                     neighborhood_cells = self.model.grid.get_neighborhood(lane_change_step, moore=True, include_center=True)
                     num_cars_in_next_position = sum(isinstance(c, Car) for cell in neighborhood_cells for c in self.model.grid.get_cell_list_contents([cell]))
 
-                    if num_cars_in_next_position >= 3:
+                    if num_cars_in_next_position >= 6:
                         diagonal_positions = [(self.pos[0] + ddx, self.pos[1] + ddy) for ddx, ddy in [(1, 1), (1, -1), (-1, 1), (-1, -1)]]
                         valid_diagonal_positions = [(x, y) for x, y in diagonal_positions if self.model.isPosValid(x, y)]
                         empty_diagonal_positions = [

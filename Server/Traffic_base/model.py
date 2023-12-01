@@ -1,6 +1,8 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+from requests import post
+import requests
 from agent import *
 import json
 import random
@@ -15,6 +17,8 @@ class CityModel(Model):
         self.city_graph = nx.DiGraph()
         self.total_cars = 0
         self.traffic_lights = []
+        self.carsInDestination = 0
+        self.step_count = 0
         dataDictionary = json.load(open("Server/city_files/mapDictionary.json"))
         
         # Load the map file. The map file is a text file where each character represents an agent.
@@ -88,6 +92,9 @@ class CityModel(Model):
         self.schedule.remove(car)
         self.grid.remove_agent(car)
         self.num_agents -= 1
+        self.carsInDestination += 1
+        
+
 
     def get_road_direction(self, x, y):
         possible_roads = self.grid.get_neighbors((x, y), moore=True, include_center=True, radius=1)
@@ -196,12 +203,38 @@ class CityModel(Model):
         return base_weight
 
     def step(self):
-        
+        """
+        Avanza un paso en la simulación.
+        """
         self.schedule.step()
+        self.step_count += 1
+        # print(self.car_counter)
+        print(f"Carros en destino: {self.carsInDestination}")
+        print("\nStep: ",self.step_count, "\n")
+        if self.step_count % 2 == 0:
+            self.generateCars(3)
+        if self.step_count % 100 == 0:
+            post(self.carsInDestination)
+        # Stop the simulation every 1000 steps
+        if self.step_count % 1001 == 0:
+            self.running = False
 
-        if self.schedule.steps == 1:
-            self.generateCars(4)
-            self.generateGraph()
-        elif self.schedule.steps % 1 == 0:
-            self.generateCars(2)
-            self.generateGraph()
+def post(arrived_cars):
+    url = "http://52.1.3.19:8585/api/"
+    endpoint = "attempts"
+    
+    data = {
+        "year": 2023,
+        "classroom": 302,
+        "name": "Equipo 10 - Domingo y Cris",
+        "num_cars": arrived_cars
+    }
+    
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.post(url + endpoint, data = json.dumps(data), headers=headers)
+    
+    print("Request "+ "successfull" if response.status_code == 200 else "failed", "Status code:", response.status_code)
+    print("Response", response.json())
