@@ -25,7 +25,7 @@ def initModel():
         cityModel = CityModel()
         return jsonify({"message": "Parameters recieved, model initiated."})
     elif request.method == "GET":
-        number_agents = 10
+        # number_agents = 10
         width = 30
         height = 30
         currentStep = 0
