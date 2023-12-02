@@ -1,6 +1,6 @@
 ﻿// TC2008B. Sistemas Multiagentes y Gráficas Computacionales
-// C# client to interact with Python. Based on the code provided by Sergio Ruiz.
-// Octavio Navarro. October 2023
+// Domingo Mora Perez
+//Cristina Gonzalez
 
 using System;
 using System.Collections;
