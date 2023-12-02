@@ -212,4 +212,22 @@ class CityModel(Model):
             self.generateCars(2)
             self.generateGraph()
 
+def post(arrived_cars):
+    url = "http://52.1.3.19:8585/api/"
+    endpoint = "attempts"
     
+    data = {
+        "year": 2023,
+        "classroom": 302,
+        "name": "Equipo 10 - Domingo y Cris",
+        "num_cars": arrived_cars
+    }
+    
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.post(url + endpoint, data = json.dumps(data), headers=headers)
+    
+    print("Request "+ "successfull" if response.status_code == 200 else "failed", "Status code:", response.status_code)
+    print("Response", response.json())
