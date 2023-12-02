@@ -1,28 +1,41 @@
+# Domingo Mora y Cristina González 
 from mesa import Agent
 import random
-import heapq
 import networkx as nx
 
 class Car(Agent):
     def __init__(self, unique_id, model, destination):
+        """
+        Crea un nuevo agente carro
+        Args:
+            unique_id: ID del agente
+            model: Referencia al modelo
+            destination: Destino del carro
+        """
         super().__init__(unique_id, model)
-        self.direction = "Undefined"
         self.destination = destination
+        self.direction = ""
         self.path = []  
-        self.stopped = False  
-        self.time_since_lane_change = 0
-        self.lane_change_cooldown = 3
-
+        self.waiting = False  
+        
+    
     def calculatePath(self):
+        """
+        Método que calcula el camino más corto desde la posición actual del carro hasta su destino
+        """
         start = self.pos
         goal = self.destination
-        city_graph = self.model.city_graph
-        path = nx.astar_path(city_graph, start, goal)
-        path.pop(0)
+        city_graph = self.model.city_graph # Se obtiene el grafo de la ciudad
+        path = nx.shortest_path(city_graph, start, goal) # Se calcula el camino más corto usando Dijsktra
+        path.pop(0) # Se elimina la posición actual del carro
         return path
 
-    def can_move(self, current_position, next_position):
-        contents = self.model.grid.get_cell_list_contents([next_position])
+    
+    def isMoveAllowed(self, currentPos, nextPos):
+        """
+        Método que verifica si el carro puede moverse a la posición indicada
+        """
+        contents = self.model.grid.get_cell_list_contents([nextPos])
 
         for content in contents:
             if isinstance(content, Traffic_Light) and not content.state:
@@ -32,18 +45,24 @@ class Car(Agent):
 
         return True
 
-    def get_cell_in_front(self):
+    def getCellAhead(self):
+        """
+        Método que obtiene la posición del carro que está adelante del carro actual
+        """
         directions = {'Up': (0, 1), 'Down': (0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
         direction = self.getDirection()
 
         if direction:
             dx, dy = directions[direction]
-            front_x, front_y = self.pos[0] + dx, self.pos[1] + dy
-            return front_x, front_y
+            aheadX, aheadY = self.pos[0] + dx, self.pos[1] + dy
+            return aheadX, aheadY
 
         return None
     
     def getDirection(self):
+        """
+        Método que obtiene la dirección del carro
+        """
         if self.path:
             dx = self.path[0][0] - self.pos[0]
             dy = self.path[0][1] - self.pos[1]
@@ -56,7 +75,13 @@ class Car(Agent):
             elif dy == -1:
                 return 'Down'
     
-    def recalculate(self, start=None, destination=None):
+    def recalculate(self, start = None, destination = None):
+        """
+        Método que recalcula el camino más corto desde la posición actual del carro hasta su destino
+        Args:
+            start: Posición inicial del carro
+            destination: Destino del carro
+        """
         self.pos = start if start else self.pos
         self.destination = destination if destination else self.destination
 
@@ -67,75 +92,108 @@ class Car(Agent):
 
     
 
-    def update_lane_and_path(self, start=None, destination=None):
-        
-        self.time_since_lane_change += 1
-        self.direction = self.getDirection()
+    def handleLaneChange(self, start = None, destination = None):
+        """
+        Método que maneja el cambio de carril del carro
+        """
+        if random.random() < 0.5:
+            self.direction = self.getDirection()
+            cellAhead = self.getCellAhead()
 
-        if self.time_since_lane_change >= self.lane_change_cooldown:
-            front_cell = self.get_cell_in_front()
-
-            if front_cell is not None:
-                lane_change_step = front_cell
+            if cellAhead is not None:
+                lane_change_step = cellAhead
                 if self.model.isPosValid(*lane_change_step):
-                    neighborhood_cells = self.model.grid.get_neighborhood(lane_change_step, moore=True, include_center=True)
-                    num_cars_in_next_position = sum(isinstance(c, Car) for cell in neighborhood_cells for c in self.model.grid.get_cell_list_contents([cell]))
 
-                    if num_cars_in_next_position >= 3:
-                        diagonal_positions = [(self.pos[0] + ddx, self.pos[1] + ddy) for ddx, ddy in [(1, 1), (1, -1), (-1, 1), (-1, -1)]]
-                        valid_diagonal_positions = [(x, y) for x, y in diagonal_positions if self.model.isPosValid(x, y)]
-                        empty_diagonal_positions = [
-                            pos for pos in valid_diagonal_positions 
+                    contents = self.model.grid.get_cell_list_contents([lane_change_step])
+                    trafficLight = next((content for content in contents if isinstance(content, Traffic_Light)), None)
+                    if trafficLight and not trafficLight.state:
+                        return
+                    neighborhood_cells = self.model.grid.get_neighborhood(lane_change_step, moore=True, include_center=True)
+                    carsInAdjPos = sum(isinstance(c, Car) for cell in neighborhood_cells for c in self.model.grid.get_cell_list_contents([cell]))
+
+                    if carsInAdjPos >= 3:
+                        adjPositions = []
+                        if self.direction == 'Up':
+                            adjPositions = [(self.pos[0] - 1, self.pos[1] + 1), (self.pos[0] + 1, self.pos[1] + 1)]
+                        elif self.direction == 'Down':
+                            adjPositions = [(self.pos[0] - 1, self.pos[1] - 1), (self.pos[0] + 1, self.pos[1] - 1)]
+                        elif self.direction == 'Left':
+                            adjPositions = [(self.pos[0] - 1, self.pos[1] - 1), (self.pos[0] - 1, self.pos[1] + 1)]
+                        elif self.direction == 'Right':
+                            adjPositions = [(self.pos[0] + 1, self.pos[1] - 1), (self.pos[0] + 1, self.pos[1] + 1)]
+
+
+                        possibleAdjPos = [(x, y) for x, y in adjPositions if self.model.isPosValid(x, y)]
+                        
+                        emptyAdjPos = possibleAdjPos
+                        emptyAdjPos = [
+                            pos for pos in possibleAdjPos 
                             if not any(isinstance(agent, (Car, Destination)) for agent in self.model.grid.get_cell_list_contents([pos]))
                         ]
 
-                        if empty_diagonal_positions:
-                            new_position = empty_diagonal_positions[0]
+                        if emptyAdjPos:
+                            new_position = emptyAdjPos[0]
                             self.model.grid.move_agent(self, new_position)
                             self.recalculate(new_position, self.destination)
-                            self.stopped = False
+                            self.waiting = False
                             self.direction = self.getDirection()
-                            self.time_since_lane_change = 0
-
+                            
         if start or destination:
             self.recalculate(start, destination)
 
     
     def move(self):
-        self.time_since_lane_change += 1
-        self.update_lane_and_path()
+        """ 
+        Método que mueve el carro a la siguiente posición en su camino
+        """
+        
+        self.handleLaneChange()
 
         if not self.path:
             self.path = self.calculatePath()
 
         if self.path:
-            next_position = self.path[0]
+            nextPos = self.path[0]
 
-            if next_position == self.destination:
+            if nextPos == self.destination:
                 self.model.remove_car(self)
             else:
                 self.direction = self.getDirection()
-                if self.can_move(self.pos, next_position):
-                    self.model.grid.move_agent(self, next_position)
+                if self.isMoveAllowed(self.pos, nextPos):
+                    self.model.grid.move_agent(self, nextPos)
                     self.path.pop(0)
                 else:
-                    self.stopped = True
+                    self.waiting = True
 
-                    front_cell = self.get_cell_in_front()
+                    cellAhead = self.getCellAhead()
 
-                    if front_cell is not None:
-                        next_cell = self.model.grid.get_cell_list_contents([front_cell]) if self.model.isPosValid(*front_cell) else []
+                    if cellAhead is not None:
+                        next_cell = self.model.grid.get_cell_list_contents([cellAhead]) if self.model.isPosValid(*cellAhead) else []
 
-                        if not self.can_move(self.pos, front_cell) or next_cell:
-                            self.stopped = True
+                        if not self.isMoveAllowed(self.pos, cellAhead) or next_cell:
+                            self.waiting = True
 
 
     def step(self):
+        """
+        Método que ejecuta el paso del modelo
+        """
         self.move()
 
 
 class Traffic_Light(Agent):
+    """
+    Agente semáforo
+    """
     def __init__(self, unique_id, model, state=False, timeToChange=10):
+        """
+        Crea un nuevo agente semáforo
+        Args:
+            unique_id: ID del agente
+            model: Referencia al modelo
+            state: Estado del semáforo
+            timeToChange: Tiempo en pasos de modelo para cambiar el estado del semáforo
+        """
         super().__init__(unique_id, model)
         self.state = state
         self.timeToChange = timeToChange
@@ -146,6 +204,9 @@ class Traffic_Light(Agent):
 
 
 class Destination(Agent):
+    """
+    Agente destino
+    """
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
@@ -154,6 +215,9 @@ class Destination(Agent):
 
 
 class Obstacle(Agent):
+    """
+    Agente obstáculo 
+    """
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
@@ -162,6 +226,9 @@ class Obstacle(Agent):
 
 
 class Road(Agent):
+    """
+    Agente calle
+    """
     def __init__(self, unique_id, model, direction="TrafficLight"):
         super().__init__(unique_id, model)
         self.direction = direction

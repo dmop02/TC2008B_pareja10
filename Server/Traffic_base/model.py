@@ -96,10 +96,7 @@ class CityModel(Model):
                 return road.direction
 
         return "Undefined"
-    
-    def is_position_available(self, x, y):
-        
-        return self.isPosValid(x, y) and not any(isinstance(agent, Car) for agent in self.grid.get_cell_list_contents((x, y)))
+ 
 
     def isPosValid(self, x, y):
         
@@ -177,13 +174,13 @@ class CityModel(Model):
             nx, ny = x + dx, y + dy
             if self.isPosValid(nx, ny) and not any(isinstance(agent, Traffic_Light) for agent in self.grid.get_cell_list_contents((nx, ny))):
                 weight = self.calculate_edge_weight(x, y, nx, ny)
-                self.city_graph.add_edge((x, y), (nx, ny), weight=weight)
-                if direction in diagonal_directions:
+                self.city_graph.add_edge((x, y), (nx, ny), weight=weight) 
+                if direction in diagonal_directions: 
                     for diag in diagonal_directions[direction]:
                         ddx, ddy = (directions[diag[0]][0] + directions[diag[1]][0], directions[diag[0]][1] + directions[diag[1]][1])
                         nnx, nny = x + ddx, y + ddy
                         if self.isPosValid(nnx, nny) and not any(isinstance(agent, Traffic_Light) for agent in self.grid.get_cell_list_contents((nnx, nny))):
-                            self.city_graph.add_edge((x, y), (nnx, nny), weight=weight * 1.5)
+                            self.city_graph.add_edge((x, y), (nnx, nny), weight=weight * 3)
                             
     
     
@@ -202,6 +199,6 @@ class CityModel(Model):
         if self.schedule.steps == 1:
             self.generateCars(4)
             self.generateGraph()
-        elif self.schedule.steps % 1 == 0:
+        elif self.schedule.steps % 5 == 0:
             self.generateCars(2)
             self.generateGraph()
