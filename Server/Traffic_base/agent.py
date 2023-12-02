@@ -156,7 +156,7 @@ class Car(Agent):
             nextPos = self.path[0]
 
             if nextPos == self.destination:
-                self.model.remove_car(self)
+                self.model.removeCar(self)
             else:
                 self.direction = self.getDirection()
                 if self.isMoveAllowed(self.pos, nextPos):
