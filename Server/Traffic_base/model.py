@@ -1,6 +1,8 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+from requests import post
+import requests
 from agent import *
 import json
 import random
@@ -15,6 +17,8 @@ class CityModel(Model):
         self.city_graph = nx.DiGraph()
         self.total_cars = 0
         self.traffic_lights = []
+        self.carsInDestination = 0
+        self.step_count = 0
         dataDictionary = json.load(open("Server/city_files/mapDictionary.json"))
         
         # Load the map file. The map file is a text file where each character represents an agent.
@@ -88,6 +92,9 @@ class CityModel(Model):
         self.schedule.remove(car)
         self.grid.remove_agent(car)
         self.num_agents -= 1
+        self.carsInDestination += 1
+        
+
 
     def get_road_direction(self, x, y):
         possible_roads = self.grid.get_neighbors((x, y), moore=True, include_center=True, radius=1)
@@ -193,7 +200,9 @@ class CityModel(Model):
         return base_weight
 
     def step(self):
-        
+        """
+        Avanza un paso en la simulación.
+        """
         self.schedule.step()
 
         if self.schedule.steps == 1:
@@ -202,3 +211,5 @@ class CityModel(Model):
         elif self.schedule.steps % 5 == 0:
             self.generateCars(2)
             self.generateGraph()
+
+    

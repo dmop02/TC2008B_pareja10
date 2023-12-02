@@ -6,8 +6,7 @@ public class LightsColor : MonoBehaviour
     public Material redLightMaterial;   
     public Color greenLightColor = Color.green; 
     public Color redLightColor = Color.red;   
-    public float changeInterval = 5.0f;
-    public int state = 0;
+    public float changeInterval = 15.0f;
 
     private MeshRenderer meshRenderer;
     private Light trafficLight;
@@ -19,19 +18,7 @@ public class LightsColor : MonoBehaviour
         meshRenderer = GetComponent<MeshRenderer>();
         trafficLight = GetComponent<Light>();
 
-        if (meshRenderer == null)
-        {
-            Debug.LogError("No MeshRenderer component found on the traffic light object.");
-            return;
-        }
-
-        if (trafficLight == null)
-        {
-            Debug.LogError("No Light component found on the traffic light object.");
-            return;
-        }
-
-        // Comenzar con la luz verde
+        //Start with Green
         meshRenderer.material = greenLightMaterial;
         trafficLight.color = greenLightColor;
         timer = changeInterval;
@@ -39,7 +26,8 @@ public class LightsColor : MonoBehaviour
 
     void Update()
     {
-        if (state == 0)
+        ChangeInterval();
+        if (isGreen == false)
             {
                 meshRenderer.material = redLightMaterial;
                 trafficLight.color = redLightColor;
@@ -50,4 +38,17 @@ public class LightsColor : MonoBehaviour
                 trafficLight.color = greenLightColor;
             }
         }
+    
+    void ChangeInterval()
+    {
+        if (timer > 0)
+        {
+            timer -= Time.deltaTime;
+        }
+        else
+        {
+            timer = 6;
+            isGreen = !isGreen;
+        }
     }
+}
