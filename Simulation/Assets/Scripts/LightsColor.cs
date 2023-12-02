@@ -1,3 +1,6 @@
+// Domingo Mora Perez
+//Cristina Gonzalez
+
 using UnityEngine;
 
 public class LightsColor : MonoBehaviour

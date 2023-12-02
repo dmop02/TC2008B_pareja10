@@ -1,3 +1,6 @@
+#Domingo Mora Perez
+#Cristina Gonzalez
+
 from mesa import Agent
 import random
 import heapq
